@@ -1,5 +1,5 @@
 import { LogEngine } from '@wgtechlabs/log-engine';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 let redisClient: Redis | null = null;
 let statsEnabled = false;

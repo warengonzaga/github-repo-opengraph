@@ -49,6 +49,13 @@ statsRoute.get('/stats', async (c) => {
 });
 
 statsRoute.post('/log', async (c) => {
+  if (!isStatsEnabled()) {
+    return c.json({
+      enabled: false,
+      message: 'Stats tracking is disabled',
+    });
+  }
+
   let body: LogPayload;
 
   try {

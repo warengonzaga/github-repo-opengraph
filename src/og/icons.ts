@@ -1,4 +1,7 @@
-import { createIconSyntaxRegExp } from '../utils/icon-syntax.js';
+import {
+  createIconSyntaxRegExp,
+  ICON_SYNTAX_SOURCE,
+} from '../utils/icon-syntax.js';
 import { sanitizeIconSlug } from '../utils/sanitize.js';
 
 // ponytail: in-process cache, never invalidated. Fine for a CDN-backed icon set
@@ -6,6 +9,7 @@ import { sanitizeIconSlug } from '../utils/sanitize.js';
 const iconCache = new Map<string, string>();
 
 const ICON_RE = createIconSyntaxRegExp('g');
+const FULL_ICON_RE = new RegExp(`^${ICON_SYNTAX_SOURCE}$`);
 
 /**
  * Fetch a Simple Icons SVG from CDN, return as base64 data URI.
@@ -46,13 +50,13 @@ export async function resolveIconsInText(
   iconColor: string,
 ): Promise<string> {
   const matches = [...text.matchAll(ICON_RE)];
-  if (matches.length === 0) return text;
+  if (matches.length === 0) return escapeHtml(text);
 
-  // Process in reverse so indexes stay valid as we splice
-  let result = text;
-  for (let i = matches.length - 1; i >= 0; i--) {
-    const m = matches[i];
+  let result = '';
+  let cursor = 0;
+  for (const m of matches) {
     if (m.index === undefined) continue;
+    result += escapeHtml(text.slice(cursor, m.index));
     const slug = m[1];
     const theme = (m[2] as 'light' | 'dark' | 'auto') || 'auto';
     // 'light' theme = light background → dark icon; 'dark' = dark bg → light icon
@@ -60,14 +64,25 @@ export async function resolveIconsInText(
       theme === 'auto' ? iconColor : theme === 'light' ? '000000' : 'ffffff';
     const dataUri = await fetchSimpleIconDataUri(slug, color);
     const replacement = dataUri
-      ? `<img src="${dataUri}" style="display:inline-block;width:1em;height:1em;vertical-align:-0.125em;margin:0 0.1em;" alt="" />`
+      ? `<img src="${escapeHtml(dataUri)}" style="display:inline-block;width:1em;height:1em;vertical-align:-0.125em;margin:0 0.1em;" alt="" />`
       : '';
-    result =
-      result.slice(0, m.index) +
-      replacement +
-      result.slice(m.index + m[0].length);
+    result += replacement;
+    cursor = m.index + m[0].length;
   }
-  return result;
+  return result + escapeHtml(text.slice(cursor));
+}
+
+export async function resolveImageSource(
+  source: string,
+  iconColor: string,
+): Promise<string> {
+  const match = source.match(FULL_ICON_RE);
+  if (!match) return source;
+
+  const theme = (match[2] as 'light' | 'dark' | 'auto') || 'auto';
+  const color =
+    theme === 'auto' ? iconColor : theme === 'light' ? '000000' : 'ffffff';
+  return (await fetchSimpleIconDataUri(match[1], color)) ?? '';
 }
 
 export function escapeHtml(str: string): string {

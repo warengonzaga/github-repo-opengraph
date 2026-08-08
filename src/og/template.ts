@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { escapeHtml, resolveIconsInText } from './icons.js';
+import { escapeHtml, resolveIconsInText, resolveImageSource } from './icons.js';
 import type { OGOptions } from './types.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -81,6 +81,19 @@ export async function renderTemplate(options: OGOptions): Promise<string> {
     resolveIconsInText(options.description, iconColor),
     resolveIconsInText(options.footerText, iconColor),
   ]);
+  const [logoSrc, badgeIconSrc, footerLogoSrc] = await Promise.all([
+    resolveImageSource(options.logo, iconColor),
+    resolveImageSource(options.badgeIcon, iconColor),
+    resolveImageSource(options.footerLogo, iconColor),
+  ]);
+
+  const badgeHtml = badge
+    ? `<span class="logo-badge">${
+        badgeIconSrc
+          ? `<img class="badge-icon" src="${escapeHtml(badgeIconSrc)}" alt="" />`
+          : ''
+      }${badge}</span>`
+    : '';
 
   const pillsHtml = buildPills(options.pills, options.pillColors);
   const footerTagHtml = buildFooterTag(options.footerTag);
@@ -108,15 +121,14 @@ export async function renderTemplate(options: OGOptions): Promise<string> {
     .replace('{{THEME_OVERRIDE}}', themeOverride)
     .replace('{{BG_COLOR}}', `#${options.bg}`)
     .replace('{{TEXT_COLOR}}', `#${options.color}`)
-    .replace('{{LOGO_SRC}}', options.logo)
+    .replace('{{LOGO_SRC}}', escapeHtml(logoSrc))
     .replace('{{LOGO_TEXT}}', logoText)
-    .replace('{{BADGE}}', badge)
-    .replace('{{BADGE_ICON}}', options.badgeIcon)
+    .replace('{{BADGE}}', badgeHtml)
     .replace('{{TITLE}}', title)
-    .replace('{{HIGHLIGHT}}', options.highlight)
+    .replace('{{HIGHLIGHT}}', escapeHtml(options.highlight))
     .replace('{{DESCRIPTION}}', description)
     .replace('{{PILLS}}', pillsHtml)
-    .replace('{{FOOTER_LOGO_SRC}}', options.footerLogo)
+    .replace('{{FOOTER_LOGO_SRC}}', escapeHtml(footerLogoSrc))
     .replace('{{FOOTER_TEXT}}', footerText)
     .replace('{{FOOTER_TAG}}', footerTagHtml);
 }

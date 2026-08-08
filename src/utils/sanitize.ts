@@ -108,7 +108,8 @@ export function isValidHexColor(value: string): boolean {
 // Tighten with an allowlist if untrusted users start pointing at internal hosts.
 export function isSafeImageUrl(value: string): boolean {
   if (!value) return false;
-  if (value.startsWith('![') && value.endsWith(']')) return true; // icon syntax
+  if (value.match(createIconSyntaxRegExp())?.[0] === value) return true;
+  if (value.startsWith('/') && !value.startsWith('//')) return true;
   try {
     const url = new URL(value);
     return url.protocol === 'https:' || url.protocol === 'http:';

@@ -3,7 +3,11 @@ import { Hono } from 'hono';
 import { getRedis, isStatsEnabled } from '../config/redis.js';
 import { renderOGImage } from '../og/render.js';
 import type { OGOptions } from '../og/types.js';
-import { isValidHexColor, sanitizeHeader } from '../utils/sanitize.js';
+import {
+  isSafeImageUrl,
+  isValidHexColor,
+  sanitizeHeader,
+} from '../utils/sanitize.js';
 
 const ogRoute = new Hono();
 
@@ -37,6 +41,11 @@ function parseList(raw: string | undefined, fallback: string[]): string[] {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function safeImageSource(raw: string, fallback: string): string {
+  const value = sanitizeHeader(raw, 500);
+  return isSafeImageUrl(value) ? value : fallback;
 }
 
 ogRoute.get('/og', async (c) => {
@@ -92,10 +101,12 @@ ogRoute.get('/og', async (c) => {
   const theme: 'dark' | 'light' = themeParam === 'light' ? 'light' : 'dark';
 
   const options: OGOptions = {
-    logo: sanitizeHeader(rawLogo, 500),
+    logo: safeImageSource(rawLogo, DEFAULTS.logo),
     logoText: sanitizeHeader(rawLogoText, 40),
     badge: rawBadge ? sanitizeHeader(rawBadge, 30) : '',
-    badgeIcon: rawBadgeIcon ? sanitizeHeader(rawBadgeIcon, 500) : '',
+    badgeIcon: rawBadgeIcon
+      ? safeImageSource(rawBadgeIcon, DEFAULTS.badgeIcon)
+      : '',
     title: sanitizeHeader(rawTitle, 80),
     highlight: sanitizeHeader(rawHighlight, 40),
     description: sanitizeHeader(rawDescription, 200),
@@ -103,7 +114,7 @@ ogRoute.get('/og', async (c) => {
       sanitizeHeader(p, 40),
     ),
     pillColors: parseList(rawPillColors, DEFAULTS.pillColors),
-    footerLogo: sanitizeHeader(rawFooterLogo, 500),
+    footerLogo: safeImageSource(rawFooterLogo, DEFAULTS.footerLogo),
     footerText: sanitizeHeader(rawFooterText, 40),
     footerTag: parseList(rawFooterTag, DEFAULTS.footerTag).map((t) =>
       sanitizeHeader(t, 30),
@@ -129,7 +140,7 @@ ogRoute.get('/og', async (c) => {
     headers['Content-Disposition'] = 'attachment; filename="opengraph.png"';
   }
 
-  return c.body(png, 200, headers);
+  return c.body(new Uint8Array(png), 200, headers);
 });
 
 export default ogRoute;
