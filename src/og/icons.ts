@@ -2,7 +2,7 @@ import {
   createIconSyntaxRegExp,
   ICON_SYNTAX_SOURCE,
 } from '../utils/icon-syntax.js';
-import { sanitizeIconSlug } from '../utils/sanitize.js';
+import { isSafeImageUrl, sanitizeIconSlug } from '../utils/sanitize.js';
 
 // ponytail: in-process cache, never invalidated. Fine for a CDN-backed icon set
 // that rarely changes; add TTL if staleness ever matters.
@@ -83,6 +83,34 @@ export async function resolveImageSource(
   const color =
     theme === 'auto' ? iconColor : theme === 'light' ? '000000' : 'ffffff';
   return (await fetchSimpleIconDataUri(match[1], color)) ?? '';
+}
+
+export async function resolveMarkupMedia(
+  content: string,
+  iconColor: string,
+): Promise<string> {
+  if (content.startsWith('simpleicons:')) {
+    return (
+      (await fetchSimpleIconDataUri(
+        content.slice('simpleicons:'.length),
+        iconColor,
+      )) ?? ''
+    );
+  }
+
+  if (content.startsWith('devicons:')) {
+    const slug = sanitizeIconSlug(content.slice('devicons:'.length));
+    return slug
+      ? 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/' +
+          slug +
+          '/' +
+          slug +
+          '-original.svg'
+      : '';
+  }
+
+  const url = content.startsWith('url:') ? content.slice(4) : '';
+  return isSafeImageUrl(url) ? url : '';
 }
 
 export function escapeHtml(str: string): string {

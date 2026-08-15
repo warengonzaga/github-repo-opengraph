@@ -28,7 +28,7 @@
   }
 
   body {
-    background: {{BG_COLOR}};
+    background: {{BACKGROUND_COLOR}};
     color: {{TEXT_COLOR}};
     position: relative;
     overflow: hidden;
@@ -79,26 +79,26 @@
   }
 
   /* ---- Logo row ---- */
-  .logo-row {
+  .project-identity {
     display: flex;
     align-items: center;
     gap: 14px;
   }
 
-  .logo-icon {
+  .project-logo {
     width: 52px;
     height: 52px;
     border-radius: 50%;
   }
 
-  .logo-text {
+  .project-name {
     font-weight: 700;
     font-size: 1.6rem;
     color: var(--text-primary);
     line-height: 1;
   }
 
-  .logo-badge {
+  .project-badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -116,7 +116,7 @@
   .badge-icon { width: 14px; height: 14px; flex-shrink: 0; }
 
   /* ---- Hero text ---- */
-  .hero-title {
+  .headline {
     font-size: 4rem;
     font-weight: 800;
     line-height: 1.1;
@@ -124,14 +124,25 @@
     margin-top: 8px;
   }
 
-  .highlight {
+  .text-tag { --tag-color: var(--discord-blurple); display: inline-flex; padding: 0.1em 0.4em; border-radius: 0.3em; color: var(--tag-color); background: color-mix(in srgb, var(--tag-color) 18%, transparent); font-size: 0.72em; vertical-align: 0.08em; }
+
+  .inline-media { width: 1em; height: 1em; object-fit: contain; vertical-align: -0.12em; margin: 0 0.08em; }
+  .inline-media.avatar { border-radius: 50%; }
+
+  [data-style="highlight"] {
     background: linear-gradient(135deg, var(--discord-blurple), var(--discord-fuchsia));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .hero-subtitle {
+  body[data-theme="light"] [data-style="highlight"] {
+    background: none;
+    color: var(--discord-blurple-dark);
+    -webkit-text-fill-color: initial;
+  }
+
+  .description {
     font-size: 1.5rem;
     color: var(--text-secondary);
     line-height: 1.5;
@@ -139,15 +150,15 @@
     max-width: 880px;
   }
 
-  /* ---- Feature pills ---- */
-  .pills {
+  /* ---- Supporting features ---- */
+  .features {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 32px;
   }
 
-  .pill {
+  .feature {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -160,7 +171,7 @@
     color: var(--text-secondary);
   }
 
-  .pill-dot {
+  .feature-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -168,13 +179,10 @@
     flex-shrink: 0;
   }
 
-  /* Pill dot color variants — overridden by inline styles per pill */
-  .pill-dot.fuchsia { background: var(--discord-fuchsia); }
-  .pill-dot.green { background: #57f287; }
-  .pill-dot.yellow { background: #fee75c; }
+  /* Feature dot colors are selected by the renderer. */
 
   /* ---- Footer ---- */
-  .footer {
+  .publisher {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -182,7 +190,7 @@
     border-top: 1px solid var(--border-color);
   }
 
-  .footer-brand {
+  .publisher-identity {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -191,52 +199,52 @@
     font-weight: 600;
   }
 
-  .footer-brand img {
+  .publisher-logo {
     width: 28px;
     height: 28px;
   }
 
-  .footer-tag {
+  .publisher-tags {
     color: var(--text-muted);
     font-size: 0.95rem;
     font-weight: 500;
     letter-spacing: 0.04em;
   }
 
-  .footer-tag .sep {
+  .publisher-tags .sep {
     margin: 0 10px;
     opacity: 0.5;
   }
 </style>
 </head>
-<body>
+<body data-theme="{{THEME}}">
   <div class="glow"></div>
   <div class="glow-alt"></div>
   <div class="frame"></div>
 
   <div class="wrap">
     <div>
-      <div class="logo-row">
-        <img src="{{LOGO_SRC}}" alt="Logo" class="logo-icon" />
-        <span class="logo-text">{{LOGO_TEXT}}</span>
+      <div class="project-identity" data-slot="project">
+        <img src="{{PROJECT_LOGO_SRC}}" alt="Project" class="project-logo" />
+        <span class="project-name">{{PROJECT_NAME}}</span>
         {{BADGE}}
       </div>
 
-      <h1 class="hero-title">Bring <span class="highlight">{{HIGHLIGHT}}</span><br />{{TITLE}}</h1>
-      <p class="hero-subtitle">{{DESCRIPTION}}</p>
+      <h1 class="headline" data-slot="headline">{{HEADLINE}}</h1>
+      <p class="description" data-slot="description">{{DESCRIPTION}}</p>
 
-      <div class="pills">
-{{PILLS}}
+      <div class="features" data-slot="features">
+{{FEATURES}}
       </div>
     </div>
 
-    <div class="footer">
-      <div class="footer-brand">
-        <img src="{{FOOTER_LOGO_SRC}}" alt="Brand" />
-        <span>{{FOOTER_TEXT}}</span>
+    <div class="publisher" data-slot="publisher">
+      <div class="publisher-identity">
+        <img src="{{PUBLISHER_LOGO_SRC}}" alt="Publisher" class="publisher-logo" />
+        <span>{{PUBLISHER_NAME}}</span>
       </div>
-      <div class="footer-tag">
-        {{FOOTER_TAG}}
+      <div class="publisher-tags">
+        {{PUBLISHER_TAGS}}
       </div>
     </div>
   </div>
