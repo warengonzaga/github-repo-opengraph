@@ -2,7 +2,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { escapeHtml, resolveIconsInText, resolveImageSource } from './icons.js';
-import type { OGOptions } from './types.js';
+import { renderInlineMarkup } from './inline-markup.js';
+import type { OGOptions, RepositoryOGOptions } from './types.js';
+import { renderWebsiteTemplate } from './website.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -29,7 +31,7 @@ function loadTemplate(): string {
   return cachedTemplate;
 }
 
-const PILL_DOT_COLORS: Record<string, string> = {
+const FEATURE_DOT_COLORS: Record<string, string> = {
   blurple: 'var(--discord-blurple)',
   fuchsia: 'var(--discord-fuchsia)',
   green: '#57f287',
@@ -38,25 +40,25 @@ const PILL_DOT_COLORS: Record<string, string> = {
   blue: '#3b82f6',
 };
 
-function pillDotColor(variant: string): string {
-  return PILL_DOT_COLORS[variant] ?? PILL_DOT_COLORS.blurple;
+function featureDotColor(variant: string): string {
+  return FEATURE_DOT_COLORS[variant] ?? FEATURE_DOT_COLORS.blurple;
 }
 
 /**
- * Build the pills HTML block from labels + color variants.
+ * Build the feature HTML block from labels + color variants.
  */
-function buildPills(pills: string[], colors: string[]): string {
-  if (pills.length === 0) return '';
-  return pills
+function buildFeatures(features: string[], colors: string[]): string {
+  if (features.length === 0) return '';
+  return features
     .map((label, i) => {
-      const dotColor = pillDotColor(colors[i] ?? 'blurple');
+      const dotColor = featureDotColor(colors[i] ?? 'blurple');
       const safeLabel = escapeHtml(label);
-      return `        <span class="pill"><span class="pill-dot" style="background:${dotColor};"></span>${safeLabel}</span>`;
+      return `        <span class="feature"><span class="feature-dot" style="background:${dotColor};"></span>${safeLabel}</span>`;
     })
     .join('\n');
 }
 
-function buildFooterTag(items: string[]): string {
+function buildPublisherTags(items: string[]): string {
   if (items.length === 0) return '';
   return items
     .map((item) => `<span>${escapeHtml(item)}</span>`)
@@ -68,35 +70,46 @@ function buildFooterTag(items: string[]): string {
  * Image tokens (![slug]) in text fields are resolved to inline <img> tags.
  */
 export async function renderTemplate(options: OGOptions): Promise<string> {
+  if (options.type !== 'repository') return renderWebsiteTemplate(options);
+  return renderRepositoryTemplate(options);
+}
+
+async function renderRepositoryTemplate(
+  options: RepositoryOGOptions,
+): Promise<string> {
   const html = loadTemplate();
 
   // Icon color for 'auto' theme icons — light icon on dark bg, dark icon on light bg
   const iconColor = options.theme === 'dark' ? 'ffffff' : '000000';
 
   // Resolve icons in all text fields
-  const [title, logoText, badge, description, footerText] = await Promise.all([
-    resolveIconsInText(options.title, iconColor),
-    resolveIconsInText(options.logoText, iconColor),
-    options.badge ? resolveIconsInText(options.badge, iconColor) : '',
-    resolveIconsInText(options.description, iconColor),
-    resolveIconsInText(options.footerText, iconColor),
-  ]);
-  const [logoSrc, badgeIconSrc, footerLogoSrc] = await Promise.all([
-    resolveImageSource(options.logo, iconColor),
-    resolveImageSource(options.badgeIcon, iconColor),
-    resolveImageSource(options.footerLogo, iconColor),
-  ]);
+  const [headline, projectName, projectBadgeText, description, publisherName] =
+    await Promise.all([
+      renderInlineMarkup(options.headline, iconColor),
+      resolveIconsInText(options.projectName, iconColor),
+      options.projectBadgeText
+        ? resolveIconsInText(options.projectBadgeText, iconColor)
+        : '',
+      resolveIconsInText(options.description, iconColor),
+      resolveIconsInText(options.publisherName, iconColor),
+    ]);
+  const [projectLogoSrc, projectBadgeIconSrc, publisherLogoSrc] =
+    await Promise.all([
+      resolveImageSource(options.projectLogo, iconColor),
+      resolveImageSource(options.projectBadgeIcon, iconColor),
+      resolveImageSource(options.publisherLogo, iconColor),
+    ]);
 
-  const badgeHtml = badge
-    ? `<span class="logo-badge">${
-        badgeIconSrc
-          ? `<img class="badge-icon" src="${escapeHtml(badgeIconSrc)}" alt="" />`
+  const badgeHtml = projectBadgeText
+    ? `<span class="project-badge">${
+        projectBadgeIconSrc
+          ? `<img class="badge-icon" src="${escapeHtml(projectBadgeIconSrc)}" alt="" />`
           : ''
-      }${badge}</span>`
+      }${projectBadgeText}</span>`
     : '';
 
-  const pillsHtml = buildPills(options.pills, options.pillColors);
-  const footerTagHtml = buildFooterTag(options.footerTag);
+  const featuresHtml = buildFeatures(options.features, options.featureColors);
+  const publisherTagsHtml = buildPublisherTags(options.publisherTags);
 
   // Theme overrides applied as a <style> injection in <head>
   const themeOverride =
@@ -119,16 +132,16 @@ export async function renderTemplate(options: OGOptions): Promise<string> {
   // Tokens map 1:1 to visible elements. Add a new token by editing the HTML.
   return html
     .replace('{{THEME_OVERRIDE}}', themeOverride)
-    .replace('{{BG_COLOR}}', `#${options.bg}`)
-    .replace('{{TEXT_COLOR}}', `#${options.color}`)
-    .replace('{{LOGO_SRC}}', escapeHtml(logoSrc))
-    .replace('{{LOGO_TEXT}}', logoText)
+    .replace('{{THEME}}', options.theme)
+    .replace('{{BACKGROUND_COLOR}}', `#${options.background}`)
+    .replace('{{TEXT_COLOR}}', `#${options.textColor}`)
+    .replace('{{PROJECT_LOGO_SRC}}', escapeHtml(projectLogoSrc))
+    .replace('{{PROJECT_NAME}}', projectName)
     .replace('{{BADGE}}', badgeHtml)
-    .replace('{{TITLE}}', title)
-    .replace('{{HIGHLIGHT}}', escapeHtml(options.highlight))
+    .replace('{{HEADLINE}}', headline)
     .replace('{{DESCRIPTION}}', description)
-    .replace('{{PILLS}}', pillsHtml)
-    .replace('{{FOOTER_LOGO_SRC}}', escapeHtml(footerLogoSrc))
-    .replace('{{FOOTER_TEXT}}', footerText)
-    .replace('{{FOOTER_TAG}}', footerTagHtml);
+    .replace('{{FEATURES}}', featuresHtml)
+    .replace('{{PUBLISHER_LOGO_SRC}}', escapeHtml(publisherLogoSrc))
+    .replace('{{PUBLISHER_NAME}}', publisherName)
+    .replace('{{PUBLISHER_TAGS}}', publisherTagsHtml);
 }

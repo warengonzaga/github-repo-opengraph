@@ -112,7 +112,21 @@ export function isSafeImageUrl(value: string): boolean {
   if (value.startsWith('/') && !value.startsWith('//')) return true;
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' || url.protocol === 'http:';
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return false;
+    const host = url.hostname.toLowerCase();
+    if (
+      host === 'localhost' ||
+      host.endsWith('.local') ||
+      host === '0.0.0.0' ||
+      host === '::1' ||
+      host.startsWith('127.') ||
+      host.startsWith('10.') ||
+      host.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host)
+    ) {
+      return false;
+    }
+    return true;
   } catch {
     return false;
   }

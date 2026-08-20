@@ -103,6 +103,29 @@
   <div class="layout">
     <div class="panel">
       <h2>Customize</h2>
+      <div class="field">
+        <label>OG Type</label>
+        <select id="og_type"><option value="website">Website</option><option value="custom">Custom</option><option value="repository">Repository (legacy)</option></select>
+        <div class="hint">Website recommends the required elements. Editing optional content switches to Custom.</div>
+      </div>
+      <div id="website-fields">
+        <h3>Website content</h3>
+        <div class="field"><label>Main Image URL</label><input id="main_image" value="/assets/devin_icon.png" /></div>
+        <div class="field"><label>Main Image Position</label><select id="main_image_position"><option value="right">Right</option><option value="left">Left</option></select></div>
+        <div class="field"><label>Heading</label><textarea id="heading">Build a better web presence</textarea></div>
+        <div class="field"><label>Subheading</label><textarea id="subheading">A focused personal website for your next project</textarea></div>
+        <div class="field"><label>Description</label><textarea id="website_description">Show what you make, explain why it matters, and give visitors one clear place to continue.</textarea></div>
+        <div class="field"><label>Website URL</label><input id="url" value="https://example.com" /></div>
+        <div class="field"><label>URL Icon</label><select id="url_icon_mode"><option value="auto">Auto favicon</option><option value="custom">Custom</option><option value="none">None</option></select></div>
+        <div class="field"><label>URL Icon Source</label><input id="url_icon" placeholder="https://... or ![icon-slug]" /></div>
+        <div class="field"><label>URL Icon Position</label><select id="url_icon_position"><option value="left">Left</option><option value="right">Right</option></select></div>
+        <details id="website-optional"><summary>Optional content</summary>
+          <div class="field"><label>Title (optional)</label><input id="header_title" placeholder="Your name or site title" /></div>
+          <div class="field"><label>Subtitle (optional)</label><input id="header_subtitle" placeholder="Supporting title" /></div>
+          <div class="field"><label>Footer Text (optional)</label><input id="footer_text" placeholder="Extra footer text" /></div>
+        </details>
+        <div class="hint">Styles: [highlight]text[/highlight], [tag color="accent"]text[/tag], [media type="icon" content="simpleicons:github"][/media]</div>
+      </div>
 
       <div class="presets">
         <button type="button" class="preset" data-preset="devin">Devin (Default)</button>
@@ -113,61 +136,62 @@
       </div>
 
       <div class="field">
-        <label>Logo URL (or ![icon-slug])</label>
-        <input id="logo" value="/assets/devin_icon.png" />
+        <label>Project Logo URL (or ![icon-slug])</label>
+        <input id="project_logo" value="/assets/devin_icon.png" />
       </div>
       <div class="field-row">
         <div class="field">
-          <label>Logo Text</label>
-          <input id="logo_text" value="Devin AI" />
+          <label>Project Name</label>
+          <input id="project_name" value="Devin AI" />
         </div>
         <div class="field">
-          <label>Badge Text (empty = hide)</label>
-          <input id="badge" value="Discord Bot" />
+          <label>Project Badge Text (empty = hide)</label>
+          <input id="project_badge_text" value="Discord Bot" />
         </div>
       </div>
       <div class="field">
-        <label>Highlight (gradient word)</label>
-        <input id="highlight" value="Devin AI" />
+        <label>Project Badge Icon URL (or ![icon-slug], empty = hide)</label>
+        <input id="project_badge_icon" value="/assets/discord.svg" />
       </div>
       <div class="field">
-        <label>Title (after highlight)</label>
-        <textarea id="title">to your Discord Server</textarea>
+        <label>Headline</label>
+        <textarea id="headline">[highlight]OpenGraph[/highlight] images for GitHub repositories</textarea>
+        <div class="hint">Use [highlight]...[/highlight] for theme-aware emphasis.</div>
       </div>
       <div class="field">
         <label>Description</label>
         <textarea id="description">Launch coding sessions with a mention or slash command, collaborate in dedicated threads, and handle PRs, tests, and bug fixes without leaving your channels.</textarea>
       </div>
       <div class="field">
-        <label>Pills (comma-separated)</label>
-        <input id="pills" value="Slash Commands,Threaded Conversations,Live Status Updates,Template System" />
+        <label>Features (comma-separated)</label>
+        <input id="features" value="Slash Commands,Threaded Conversations,Live Status Updates,Template System" />
       </div>
       <div class="field">
-        <label>Pill Colors (comma-separated: blurple,fuchsia,green,yellow,red,blue)</label>
-        <input id="pill_colors" value="blurple,fuchsia,green,yellow" />
+        <label>Feature Colors (comma-separated: blurple,fuchsia,green,yellow,red,blue)</label>
+        <input id="feature_colors" value="blurple,fuchsia,green,yellow" />
       </div>
       <div class="field-row">
         <div class="field">
-          <label>Footer Logo URL</label>
-          <input id="footer_logo" value="/assets/wgtechlabs_icon.svg" />
+          <label>Publisher Logo URL</label>
+          <input id="publisher_logo" value="/assets/wgtechlabs_icon.svg" />
         </div>
         <div class="field">
-          <label>Footer Text</label>
-          <input id="footer_text" value="@wgtechlabs" />
+          <label>Publisher Name</label>
+          <input id="publisher_name" value="@wgtechlabs" />
         </div>
       </div>
       <div class="field">
-        <label>Footer Tags (comma-separated)</label>
-        <input id="footer_tag" value="Open Source,Self-Hosted,TypeScript" />
+        <label>Publisher Tags (comma-separated)</label>
+        <input id="publisher_tags" value="Open Source,Self-Hosted,TypeScript" />
       </div>
       <div class="field-row">
         <div class="field">
           <label>Background (hex, no #)</label>
-          <input id="bg" value="0b0d10" maxlength="8" />
+          <input id="background" value="0b0d10" maxlength="8" />
         </div>
         <div class="field">
           <label>Text Color (hex, no #)</label>
-          <input id="color" value="f2f3f5" maxlength="8" />
+          <input id="text_color" value="f2f3f5" maxlength="8" />
         </div>
       </div>
       <div class="field">
@@ -195,35 +219,35 @@
 </div>
 
 <script>
-  const fields = [
-    'logo','logo_text','badge','highlight','title','description',
-    'pills','pill_colors','footer_logo','footer_text','footer_tag',
-    'bg','color','theme'
-  ];
+  const repositoryFields = ['project_logo','project_name','project_badge_text','project_badge_icon','headline','description','features','feature_colors','publisher_logo','publisher_name','publisher_tags'];
+  const websiteRequired = ['main_image','main_image_position','heading','subheading','website_description','url','url_icon_mode','url_icon','url_icon_position'];
+  const websiteOptional = ['header_title','header_subtitle','footer_text'];
+  const sharedFields = ['background','text_color','theme'];
+  const typeSelect = document.getElementById('og_type');
+  const websiteFields = document.getElementById('website-fields');
+  const repositoryControls = repositoryFields.map(id => document.getElementById(id).closest('.field'));
+  const repositoryPresets = document.querySelector('.presets');
 
-  const presets = {
-    devin: {
-      logo:'/assets/devin_icon.png', logo_text:'Devin AI', badge:'Discord Bot',
-      highlight:'Devin AI', title:'to your Discord Server',
-      description:'Launch coding sessions with a mention or slash command, collaborate in dedicated threads, and handle PRs, tests, and bug fixes without leaving your channels.',
-      pills:'Slash Commands,Threaded Conversations,Live Status Updates,Template System',
-      pill_colors:'blurple,fuchsia,green,yellow',
-      footer_logo:'/assets/wgtechlabs_icon.svg', footer_text:'@wgtechlabs',
-      footer_tag:'Open Source,Self-Hosted,TypeScript',
-      bg:'0b0d10', color:'f2f3f5', theme:'dark'
-    },
-    midnight: { bg:'1a1a1a', color:'ffffff', theme:'dark' },
-    vibe: { bg:'ec4899', color:'ffffff', theme:'dark' },
-    ocean: { bg:'14b8a6', color:'ffffff', theme:'dark' },
-    light: { bg:'f8f9fb', color:'0b0d10', theme:'light' }
-  };
+  function showType() {
+    const website = typeSelect.value !== 'repository';
+    websiteFields.style.display = website ? 'block' : 'none';
+    repositoryControls.forEach(field => field.style.display = website ? 'none' : 'block');
+    repositoryPresets.style.display = website ? 'none' : 'flex';
+    document.getElementById('website-optional').open = typeSelect.value === 'custom';
+  }
+
+  function activeFields() {
+    if (typeSelect.value === 'repository') return ['og_type', ...repositoryFields, ...sharedFields];
+    const optional = typeSelect.value === 'custom' ? websiteOptional : websiteOptional.filter(id => document.getElementById(id).value.trim());
+    return ['og_type', ...websiteRequired, ...optional, ...sharedFields];
+  }
 
   function buildUrl(download = false) {
     const params = new URLSearchParams();
-    for (const f of fields) {
-      const el = document.getElementById(f);
-      const val = el.value.trim();
-      if (val) params.set(f, val);
+    for (const id of activeFields()) {
+      const field = document.getElementById(id);
+      const value = field.value.trim();
+      if (value) params.set(id === 'website_description' ? 'description' : id, value);
     }
     if (download) params.set('download', 'true');
     return '/og?' + params.toString();
@@ -235,68 +259,24 @@
     document.getElementById('url-box').textContent = window.location.origin + url;
   }
 
-  let debounce;
-  for (const f of fields) {
-    document.getElementById(f).addEventListener('input', () => {
-      clearTimeout(debounce);
-      debounce = setTimeout(updatePreview, 300);
-    });
+  function schedulePreview() {
+    clearTimeout(window.previewTimer);
+    window.previewTimer = setTimeout(updatePreview, 250);
   }
 
-  document.querySelectorAll('.preset').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const preset = presets[btn.dataset.preset];
-      for (const [k, v] of Object.entries(preset)) {
-        document.getElementById(k).value = v;
-      }
-      updatePreview();
+  [...repositoryFields, ...websiteRequired, ...websiteOptional, ...sharedFields, 'og_type'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      if (websiteOptional.includes(id) && typeSelect.value === 'website') typeSelect.value = 'custom';
+      showType(); schedulePreview();
     });
+    document.getElementById(id).addEventListener('change', () => { showType(); schedulePreview(); });
   });
 
-  document.getElementById('download').addEventListener('click', () => {
-    const a = document.createElement('a');
-    a.href = buildUrl(true);
-    a.download = 'opengraph.png';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    fetch('/log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'download_png', url: buildUrl() })
-    }).catch(() => {});
-  });
-
-  document.getElementById('copy-url').addEventListener('click', async (e) => {
-    const url = window.location.origin + buildUrl();
-    try {
-      await navigator.clipboard.writeText(url);
-      e.target.textContent = 'Copied!';
-      setTimeout(() => e.target.textContent = 'Copy URL', 1500);
-      fetch('/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'copy_url', url })
-      }).catch(() => {});
-    } catch {}
-  });
-
-  document.getElementById('copy-md').addEventListener('click', async (e) => {
-    const url = window.location.origin + buildUrl();
-    const md = `![OpenGraph](${url})<!-- Created with GitHub Repo Opengraph by Waren Gonzaga: ${window.location.origin} -->`;
-    try {
-      await navigator.clipboard.writeText(md);
-      e.target.textContent = 'Copied!';
-      setTimeout(() => e.target.textContent = 'Copy Markdown', 1500);
-      fetch('/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'copy_markdown', url })
-      }).catch(() => {});
-    } catch {}
-  });
-
-  updatePreview();
+  document.querySelectorAll('.preset').forEach(button => button.addEventListener('click', () => updatePreview()));
+  document.getElementById('download').addEventListener('click', () => { const link=document.createElement('a'); link.href=buildUrl(true); link.download='opengraph.png'; link.click(); });
+  document.getElementById('copy-url').addEventListener('click', async event => { await navigator.clipboard.writeText(window.location.origin + buildUrl()); event.target.textContent='Copied!'; setTimeout(() => event.target.textContent='Copy URL',1500); });
+  document.getElementById('copy-md').addEventListener('click', async event => { await navigator.clipboard.writeText('![OpenGraph](' + window.location.origin + buildUrl() + ')'); event.target.textContent='Copied!'; setTimeout(() => event.target.textContent='Copy Markdown',1500); });
+  showType(); updatePreview();
 </script>
 </body>
 </html>
