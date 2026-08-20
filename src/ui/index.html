@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GitHub Repo Opengraph Generator</title>
+<style>
+  :root {
+    --bg: #0b0d10;
+    --card: #1a1d24;
+    --border: #2a2d35;
+    --text: #f2f3f5;
+    --text-muted: #b5bac1;
+    --accent: #5865f2;
+    --accent-dark: #4752c4;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 32px; }
+  header h1 {
+    font-size: 2rem; font-weight: 800; margin-bottom: 8px;
+    background: linear-gradient(135deg, #5865f2, #eb459e);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p { color: var(--text-muted); }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .panel h2 {
+    font-size: 1.1rem; margin-bottom: 16px; font-weight: 700;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 0.85rem; color: var(--text-muted);
+    margin-bottom: 6px; font-weight: 600;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 10px 12px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-size: 0.9rem; font-family: var(--font);
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .preview-wrap {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-bottom: 16px;
+  }
+  .preview-wrap img { display: block; width: 100%; height: auto; }
+  .url-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px; font-family: monospace;
+    font-size: 0.8rem; word-break: break-all; margin-bottom: 12px;
+    color: var(--text-muted); max-height: 100px; overflow: auto;
+  }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  button {
+    flex: 1; padding: 12px 16px; border: none; border-radius: 6px;
+    font-weight: 700; font-size: 0.9rem; cursor: pointer;
+    font-family: var(--font); transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.9; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .preset {
+    padding: 6px 12px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 100px; font-size: 0.8rem; cursor: pointer; color: var(--text);
+    font-family: var(--font);
+  }
+  .preset:hover { border-color: var(--accent); }
+  .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>GitHub Repo Opengraph Generator</h1>
+    <p>Generate customizable OpenGraph images via URL parameters</p>
+  </header>
+
+  <div class="layout">
+    <div class="panel">
+      <h2>Customize</h2>
+
+      <div class="presets">
+        <button type="button" class="preset" data-preset="devin">Devin (Default)</button>
+        <button type="button" class="preset" data-preset="midnight">Midnight</button>
+        <button type="button" class="preset" data-preset="vibe">Vibe</button>
+        <button type="button" class="preset" data-preset="ocean">Ocean</button>
+        <button type="button" class="preset" data-preset="light">Light</button>
+      </div>
+
+      <div class="field">
+        <label>Logo URL (or ![icon-slug])</label>
+        <input id="logo" value="/assets/devin_icon.png" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Logo Text</label>
+          <input id="logo_text" value="Devin AI" />
+        </div>
+        <div class="field">
+          <label>Badge Text (empty = hide)</label>
+          <input id="badge" value="Discord Bot" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Highlight (gradient word)</label>
+        <input id="highlight" value="Devin AI" />
+      </div>
+      <div class="field">
+        <label>Title (after highlight)</label>
+        <textarea id="title">to your Discord Server</textarea>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="description">Launch coding sessions with a mention or slash command, collaborate in dedicated threads, and handle PRs, tests, and bug fixes without leaving your channels.</textarea>
+      </div>
+      <div class="field">
+        <label>Pills (comma-separated)</label>
+        <input id="pills" value="Slash Commands,Threaded Conversations,Live Status Updates,Template System" />
+      </div>
+      <div class="field">
+        <label>Pill Colors (comma-separated: blurple,fuchsia,green,yellow,red,blue)</label>
+        <input id="pill_colors" value="blurple,fuchsia,green,yellow" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Footer Logo URL</label>
+          <input id="footer_logo" value="/assets/wgtechlabs_icon.svg" />
+        </div>
+        <div class="field">
+          <label>Footer Text</label>
+          <input id="footer_text" value="@wgtechlabs" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Footer Tags (comma-separated)</label>
+        <input id="footer_tag" value="Open Source,Self-Hosted,TypeScript" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Background (hex, no #)</label>
+          <input id="bg" value="0b0d10" maxlength="8" />
+        </div>
+        <div class="field">
+          <label>Text Color (hex, no #)</label>
+          <input id="color" value="f2f3f5" maxlength="8" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Theme</label>
+        <select id="theme">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Preview</h2>
+      <div class="preview-wrap">
+        <img id="preview" alt="OpenGraph preview" />
+      </div>
+      <div class="url-box" id="url-box"></div>
+      <div class="actions">
+        <button type="button" class="btn-primary" id="download">Download PNG</button>
+        <button type="button" class="btn-secondary" id="copy-url">Copy URL</button>
+        <button type="button" class="btn-secondary" id="copy-md">Copy Markdown</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fields = [
+    'logo','logo_text','badge','highlight','title','description',
+    'pills','pill_colors','footer_logo','footer_text','footer_tag',
+    'bg','color','theme'
+  ];
+
+  const presets = {
+    devin: {
+      logo:'/assets/devin_icon.png', logo_text:'Devin AI', badge:'Discord Bot',
+      highlight:'Devin AI', title:'to your Discord Server',
+      description:'Launch coding sessions with a mention or slash command, collaborate in dedicated threads, and handle PRs, tests, and bug fixes without leaving your channels.',
+      pills:'Slash Commands,Threaded Conversations,Live Status Updates,Template System',
+      pill_colors:'blurple,fuchsia,green,yellow',
+      footer_logo:'/assets/wgtechlabs_icon.svg', footer_text:'@wgtechlabs',
+      footer_tag:'Open Source,Self-Hosted,TypeScript',
+      bg:'0b0d10', color:'f2f3f5', theme:'dark'
+    },
+    midnight: { bg:'1a1a1a', color:'ffffff', theme:'dark' },
+    vibe: { bg:'ec4899', color:'ffffff', theme:'dark' },
+    ocean: { bg:'14b8a6', color:'ffffff', theme:'dark' },
+    light: { bg:'f8f9fb', color:'0b0d10', theme:'light' }
+  };
+
+  function buildUrl(download = false) {
+    const params = new URLSearchParams();
+    for (const f of fields) {
+      const el = document.getElementById(f);
+      const val = el.value.trim();
+      if (val) params.set(f, val);
+    }
+    if (download) params.set('download', 'true');
+    return '/og?' + params.toString();
+  }
+
+  function updatePreview() {
+    const url = buildUrl();
+    document.getElementById('preview').src = url;
+    document.getElementById('url-box').textContent = window.location.origin + url;
+  }
+
+  let debounce;
+  for (const f of fields) {
+    document.getElementById(f).addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(updatePreview, 300);
+    });
+  }
+
+  document.querySelectorAll('.preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = presets[btn.dataset.preset];
+      for (const [k, v] of Object.entries(preset)) {
+        document.getElementById(k).value = v;
+      }
+      updatePreview();
+    });
+  });
+
+  document.getElementById('download').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = buildUrl(true);
+    a.download = 'opengraph.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    fetch('/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'download_png', url: buildUrl() })
+    }).catch(() => {});
+  });
+
+  document.getElementById('copy-url').addEventListener('click', async (e) => {
+    const url = window.location.origin + buildUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      e.target.textContent = 'Copied!';
+      setTimeout(() => e.target.textContent = 'Copy URL', 1500);
+      fetch('/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'copy_url', url })
+      }).catch(() => {});
+    } catch {}
+  });
+
+  document.getElementById('copy-md').addEventListener('click', async (e) => {
+    const url = window.location.origin + buildUrl();
+    const md = `![OpenGraph](${url})<!-- Created with GitHub Repo Opengraph by Waren Gonzaga: ${window.location.origin} -->`;
+    try {
+      await navigator.clipboard.writeText(md);
+      e.target.textContent = 'Copied!';
+      setTimeout(() => e.target.textContent = 'Copy Markdown', 1500);
+      fetch('/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'copy_markdown', url })
+      }).catch(() => {});
+    } catch {}
+  });
+
+  updatePreview();
+</script>
+</body>
+</html>
